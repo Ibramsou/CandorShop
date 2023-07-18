@@ -1,0 +1,64 @@
+plugins {
+    id 'java'
+    id 'net.minecrell.plugin-yml.bukkit' version '0.5.3'
+    id 'com.github.johnrengelman.shadow' version '7.1.1'
+}
+
+group = 'fr.candor'
+version = '1.0-SNAPSHOT'
+
+def devJar = 'candor-shop.jar'
+def buildVersion = project.version
+
+repositories {
+    mavenCentral()
+    maven {
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+
+        // As of Gradle 5.1, you can limit this to only those
+        // dependencies you expect from it
+        content {
+            includeGroup 'org.bukkit'
+            includeGroup 'org.spigotmc'
+        }
+    }
+    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url = 'https://oss.sonatype.org/content/repositories/central' }
+}
+
+defaultTasks 'build'
+
+dependencies {
+    compileOnly 'org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT'
+    implementation 'io.github.ibramsou:dynamic-yaml-configuration-api:1.3.1'
+    implementation 'io.github.ibramsou:dynamic-yaml-configuration-core:1.3.1'
+}
+
+shadowJar {
+    archiveBaseName.set('candor-shop')
+    archiveClassifier.set('')
+    destinationDirectory.set(new File('out/'))
+}
+
+tasks.register('copyDevJar', Copy) {
+    // Dev jar for Bramsou test server :)
+    from shadowJar
+    rename '.+', devJar
+    into "server/plugins"
+}
+
+tasks.named('build') {
+    // Remove if not used :=)
+    finalizedBy(copyDevJar)
+}
+
+bukkit {
+    name = 'candor-shop'
+    version = buildVersion
+    main = 'fr.candor.shop.ShopPlugin'
+    author = 'Bramsou'
+}
+
+artifacts {
+    archives shadowJar
+}
