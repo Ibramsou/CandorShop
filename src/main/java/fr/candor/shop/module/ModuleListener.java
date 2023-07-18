@@ -1,4 +1,4 @@
-package fr.candor.shop.listener;
+package fr.candor.shop.module;
 
 import fr.candor.shop.ShopPlugin;
 import org.bukkit.event.Listener;

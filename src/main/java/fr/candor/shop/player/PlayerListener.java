@@ -1,6 +1,6 @@
 package fr.candor.shop.player;
 
-import fr.candor.shop.listener.ModuleListener;
+import fr.candor.shop.module.ModuleListener;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;

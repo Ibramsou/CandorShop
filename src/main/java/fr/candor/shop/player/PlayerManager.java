@@ -2,7 +2,7 @@ package fr.candor.shop.player;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
-import fr.candor.shop.listener.Module;
+import fr.candor.shop.module.Module;
 
 import java.util.UUID;
 
