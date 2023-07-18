@@ -15,11 +15,11 @@ public class PlayerExpiration implements Expiry<UUID, PlayerData> {
 
     @Override
     public long expireAfterUpdate(@Nonnull UUID key, @Nonnull PlayerData value, long currentTime, long currentDuration) {
-        return value.isOnline() ? currentTime : TimeUnit.SECONDS.toNanos(10);
+        return value.isOnline() ? currentTime : TimeUnit.SECONDS.toNanos(30);
     }
 
     @Override
     public long expireAfterRead(@Nonnull UUID key, @Nonnull PlayerData value, long currentTime, long currentDuration) {
-        return value.isOnline() ? currentTime : TimeUnit.SECONDS.toNanos(10);
+        return value.isOnline() ? currentTime : TimeUnit.MINUTES.toNanos(1);
     }
 }
