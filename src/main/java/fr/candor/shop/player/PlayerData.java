@@ -3,6 +3,8 @@ package fr.candor.shop.player;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -37,11 +39,12 @@ public class PlayerData {
         return this.player != null && this.player.isOnline();
     }
 
+    @Nullable
     public Player getPlayer() {
         return player;
     }
 
-    public void setPlayer(Player player) {
+    public void setPlayer(@Nonnull Player player) {
         this.player = player;
     }
 }

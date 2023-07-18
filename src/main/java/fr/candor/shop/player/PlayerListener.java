@@ -28,7 +28,8 @@ public class PlayerListener extends ModuleListener<PlayerManager> {
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        System.out.println(event.getPlayer().isOnline());
-        this.module.getPlayerCache().get(event.getPlayer().getUniqueId());
+        // Delay on next tick to tell that the player is being offline on the cache
+        this.plugin.getServer().getScheduler().scheduleSyncDelayedTask(this.plugin,
+                () -> this.module.getPlayerCache().getIfPresent(event.getPlayer().getUniqueId()), 1L);
     }
 }
