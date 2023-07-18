@@ -4,8 +4,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class ShopPlugin extends JavaPlugin {
 
+    private ShopConfig config;
+
     @Override
     public void onEnable() {
-        this.getLogger().info("Enabled plugin for Candor");
+        this.config = new ShopConfig(this);
+    }
+
+    public ShopConfig getConfiguration() {
+        return config;
     }
 }
