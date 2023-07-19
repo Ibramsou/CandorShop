@@ -2,9 +2,12 @@ package fr.candor.shop;
 
 import fr.candor.shop.database.SqlDatabase;
 import fr.candor.shop.player.PlayerData;
+import fr.candor.shop.shop.ShopItem;
+import fr.candor.shop.storage.ItemByteSerializer;
+import org.bukkit.inventory.ItemStack;
 
 import java.sql.ResultSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -29,6 +32,44 @@ public class ShopDatabase extends SqlDatabase {
         this.createClosingStatement(statement -> statement.executeUpdate(
                 "CREATE TABLE IF NOT EXISTS players (uuid VARCHAR(36) UNIQUE NOT NULL, balance DOUBLE, PRIMARY KEY (uuid))"
         ));
+        this.createClosingStatement(statement -> statement.executeUpdate(
+                "CREATE TABLE IF NOT EXISTS items (id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, uuid VARCHAR(36) UNIQUE NOT NULL, seller VARCHAR(36) NOT NULL, price DOUBLE, item varbinary(1000))"
+        ));
+    }
+
+    public void sellItem(ShopItem item) {
+        byte[] bytes = ItemByteSerializer.serialize(item.item());
+        this.prepareClosingStatement("INSERT INTO items (uuid, seller, price, item) VALUES (?, ?, ?, ?)", statement -> {
+            statement.setString(1, item.id().toString());
+            statement.setString(2, item.seller().toString());
+            statement.setDouble(3, item.price());
+            statement.setBytes(4, bytes);
+            statement.executeUpdate();
+        });
+    }
+
+    public void dropItem(ShopItem item) {
+        this.prepareClosingStatement("DELETE FROM items WHERE uuid=?", statement -> {
+            statement.setString(1, item.id().toString());
+            statement.executeUpdate();
+        });
+    }
+
+    public void loadItems(Map<UUID, Set<ShopItem>> sellerItems, Set<ShopItem> menuItems) {
+        this.createClosingStatement(statement -> {
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM items");
+            if (resultSet == null) return;
+            while (resultSet.next()) {
+                UUID id = UUID.fromString(resultSet.getString("uuid"));
+                UUID seller = UUID.fromString(resultSet.getString("seller"));
+                double price = resultSet.getDouble("price");
+                byte[] bytes = resultSet.getBytes("item");
+                ItemStack itemStack = ItemByteSerializer.deserialize(bytes);
+                ShopItem item = new ShopItem(id, seller, itemStack, price);
+                sellerItems.computeIfAbsent(seller, uuid -> new HashSet<>()).add(item);
+                menuItems.add(item);
+            }
+        });
     }
 
     public PlayerData loadUser(UUID uuid) {

@@ -1,9 +1,11 @@
 package fr.candor.shop.shop;
 
+import fr.candor.shop.ShopPlugin;
 import fr.candor.shop.menu.MenuItem;
 import fr.candor.shop.menu.handler.PaginatedMenuHandler;
 import fr.candor.shop.module.Module;
 import fr.candor.shop.player.PlayerData;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -15,10 +17,15 @@ public class ShopManager extends Module implements PaginatedMenuHandler {
     private final Map<UUID, Set<ShopItem>> sellerItems = new HashMap<>();
     private final Set<ShopItem> menuItems = new LinkedHashSet<>();
 
+    public ShopManager() {
+        this.plugin.getDatabase().loadItems(sellerItems, menuItems);
+    }
+
     public void sellITem(Player player, ItemStack itemStack, double price) {
         ShopItem item = new ShopItem(UUID.randomUUID(), player.getUniqueId(), itemStack, price);
         this.sellerItems.computeIfAbsent(player.getUniqueId(), uuid -> new HashSet<>()).add(item);
         this.menuItems.add(item);
+        this.plugin.getServer().getScheduler().runTaskLaterAsynchronously(this.plugin, () -> this.plugin.getDatabase().sellItem(item), 1L);
     }
 
     public void buyItem(Player buyer, ShopItem item) {
@@ -34,6 +41,7 @@ public class ShopManager extends Module implements PaginatedMenuHandler {
             this.plugin.getPlayerManager().modifyBalance(item.seller(), currentValue -> currentValue + item.price());
             data.modifyBalance(currentValue -> currentValue - item.price());
             buyer.getInventory().addItem(item.item());
+            Bukkit.getScheduler().runTaskLaterAsynchronously(this.plugin, () -> this.plugin.getDatabase().dropItem(item), 1L);
         } else {
             buyer.sendMessage(ChatColor.RED + "You don't have enough money");
         }
