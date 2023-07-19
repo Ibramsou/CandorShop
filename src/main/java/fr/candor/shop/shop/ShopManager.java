@@ -13,7 +13,7 @@ import java.util.*;
 public class ShopManager extends Module implements PaginatedMenuHandler {
 
     private final Map<UUID, Set<ShopItem>> sellerItems = new HashMap<>();
-    private final Set<ShopItem> menuItems = new HashSet<>();
+    private final Set<ShopItem> menuItems = new LinkedHashSet<>();
 
     public void sellITem(Player player, ItemStack itemStack, double price) {
         ShopItem item = new ShopItem(UUID.randomUUID(), player.getUniqueId(), itemStack, price);
@@ -22,6 +22,10 @@ public class ShopManager extends Module implements PaginatedMenuHandler {
     }
 
     public void buyItem(Player buyer, ShopItem item) {
+        if (buyer.getUniqueId().equals(item.seller())) {
+            buyer.sendMessage(ChatColor.RED + "You cannot buy your own item !");
+            return;
+        }
         PlayerData data = this.plugin.getPlayerManager().getPlayerCache().get(buyer.getUniqueId());
         if (data == null) return;
         if (data.getBalance() > item.price()) {
@@ -29,6 +33,7 @@ public class ShopManager extends Module implements PaginatedMenuHandler {
             this.menuItems.remove(item);
             this.plugin.getPlayerManager().modifyBalance(item.seller(), currentValue -> currentValue + item.price());
             data.modifyBalance(currentValue -> currentValue - item.price());
+            buyer.getInventory().addItem(item.item());
         } else {
             buyer.sendMessage(ChatColor.RED + "You don't have enough money");
         }

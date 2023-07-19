@@ -1,4 +1,4 @@
-package fr.candor.shop.util;
+package fr.candor.shop.item;
 
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -23,6 +23,15 @@ public abstract class ItemCreator<V> extends ItemStack {
     public final V displayName(String displayName) {
         meta.setDisplayName(displayName);
         return returnInstance();
+    }
+
+    public final V addLore(List<String> lore) {
+        if (meta.hasLore() && meta.getLore() != null) {
+            meta.getLore().addAll(lore);
+            return returnInstance();
+        } else {
+            return this.lore(lore);
+        }
     }
 
     public final V lore(List<String> lore) {

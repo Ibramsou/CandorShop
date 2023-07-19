@@ -67,6 +67,12 @@ bukkit {
         balance {
             description = 'Show players balance'
         }
+        auctionhouse {
+            description = 'Open auction house gui'
+        }
+        sell {
+            description = 'Sell an item'
+        }
     }
 }
 

@@ -6,7 +6,7 @@ import fr.candor.shop.menu.MenuItem;
 import fr.candor.shop.menu.holder.PageHolder;
 import fr.candor.shop.menu.page.MenuPage;
 import fr.candor.shop.menu.type.PaginatedMenu;
-import fr.candor.shop.util.ItemCreator;
+import fr.candor.shop.item.ItemCreator;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;

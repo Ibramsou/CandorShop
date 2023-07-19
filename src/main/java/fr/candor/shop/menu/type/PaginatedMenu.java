@@ -4,6 +4,7 @@ import fr.candor.shop.menu.Menu;
 import fr.candor.shop.menu.MenuItem;
 import fr.candor.shop.menu.handler.PaginatedMenuHandler;
 import fr.candor.shop.menu.page.MenuPage;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -30,7 +31,13 @@ public class PaginatedMenu implements Menu {
 
     public MenuPage open(Player player, int page) {
         int index = page - 1;
-        if (index >= this.pages || index < 0) return null;
+        if (this.pages == 0) {
+            player.sendMessage(ChatColor.RED + "Gui is empty");
+            return null;
+        }
+        if (index >= this.pages || index < 0) {
+            return null;
+        }
         MenuPage pearlPage = this.pageList.get(index);
         pearlPage.open(player);
         return pearlPage;

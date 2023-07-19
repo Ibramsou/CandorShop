@@ -3,7 +3,7 @@ package fr.candor.shop.menu.item;
 import fr.candor.shop.menu.Menu;
 import fr.candor.shop.menu.MenuHolder;
 import fr.candor.shop.menu.MenuItem;
-import fr.candor.shop.util.ItemCreator;
+import fr.candor.shop.item.ItemCreator;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;

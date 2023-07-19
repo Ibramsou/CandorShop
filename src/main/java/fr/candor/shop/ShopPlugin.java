@@ -2,6 +2,8 @@ package fr.candor.shop;
 
 import fr.candor.shop.command.balance.BalanceCommand;
 import fr.candor.shop.command.manage.ManageCommand;
+import fr.candor.shop.command.shop.SellCommand;
+import fr.candor.shop.command.shop.ShopCommand;
 import fr.candor.shop.menu.MenuListener;
 import fr.candor.shop.player.PlayerManager;
 import fr.candor.shop.shop.ShopManager;
@@ -38,6 +40,8 @@ public class ShopPlugin extends JavaPlugin {
     private void addCommands() {
         Objects.requireNonNull(this.getServer().getPluginCommand("manage")).setExecutor(new ManageCommand(this));
         Objects.requireNonNull(this.getServer().getPluginCommand("balance")).setExecutor(new BalanceCommand(this));
+        Objects.requireNonNull(this.getServer().getPluginCommand("sell")).setExecutor(new SellCommand(this));
+        Objects.requireNonNull(this.getServer().getPluginCommand("auctionhouse")).setExecutor(new ShopCommand(this));
     }
 
     public ShopDatabase getDatabase() {

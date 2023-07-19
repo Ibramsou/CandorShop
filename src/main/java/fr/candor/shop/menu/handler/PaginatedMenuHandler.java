@@ -5,6 +5,7 @@ import fr.candor.shop.menu.page.MenuPage;
 import fr.candor.shop.menu.page.item.NextPageItem;
 import fr.candor.shop.menu.page.item.PreviousPageItem;
 import fr.candor.shop.menu.util.PagePatternUtil;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -20,8 +21,8 @@ public interface PaginatedMenuHandler {
     default Map<Integer, MenuItem> itemsPerPage() {
         Map<Integer, MenuItem> itemMap = new HashMap<>();
         Sound success = Sound.BLOCK_NOTE_BLOCK_PLING;
-        PreviousPageItem previous = new PreviousPageItem(Material.ARROW).displayName("§bPrevious Page").successSound(success);
-        NextPageItem next = new NextPageItem(Material.ARROW).displayName("§aNext Page").successSound(success);
+        PreviousPageItem previous = new PreviousPageItem(Material.ARROW).displayName(ChatColor.AQUA + "Previous Page").successSound(success);
+        NextPageItem next = new NextPageItem(Material.ARROW).displayName(ChatColor.GREEN + "Next Page").successSound(success);
         itemMap.put(0, previous);
         itemMap.put(8, next);
         itemMap.put(45, previous);
