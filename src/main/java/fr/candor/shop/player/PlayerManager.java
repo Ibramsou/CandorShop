@@ -1,6 +1,5 @@
 package fr.candor.shop.player;
 
-import com.github.benmanes.caffeine.cache.AsyncLoadingCache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import fr.candor.shop.module.Module;
@@ -23,7 +22,7 @@ public class PlayerManager extends Module {
 
     private final LoadingCache<UUID, PlayerData> playerCache = Caffeine.newBuilder()
             .expireAfter(new PlayerExpiration())
-            .build(this::queueLoad); // TODO: Run database load
+            .build(this::queueLoad);
 
     public PlayerManager() {
         this.plugin.getServer().getOnlinePlayers().forEach(player -> this.playerCache.get(player.getUniqueId()));

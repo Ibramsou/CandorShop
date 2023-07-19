@@ -82,6 +82,7 @@ public class ShopDatabase extends SqlDatabase {
                 PlayerData data;
                 try {
                     data = this.saveQueue.take();
+                    data.setSaving(false);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -92,7 +93,6 @@ public class ShopDatabase extends SqlDatabase {
                     statement.setDouble(2, data.getBalance());
                     statement.setDouble(3, data.getBalance());
                     statement.executeUpdate();
-                    data.setSaving(false);
                 } finally {
                     data.getLock().unlock();
                 }
