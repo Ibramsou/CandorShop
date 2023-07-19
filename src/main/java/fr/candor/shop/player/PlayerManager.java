@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 public class PlayerManager extends Module {
 
     private static final ExecutorService OFFLINE_POOL = Executors.newCachedThreadPool();
-    private static final Pattern PLAYER_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_]{1,16}$");
+    private static final Pattern PLAYER_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_]{3,16}$");
 
     private final AsyncLoadingCache<UUID, PlayerData> playerCache = Caffeine.newBuilder()
             .expireAfter(new PlayerExpiration())

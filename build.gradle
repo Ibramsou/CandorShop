@@ -64,6 +64,9 @@ bukkit {
         manage {
             description = 'Manage players balance'
         }
+        balance {
+            description = 'Show players balance'
+        }
     }
 }
 
