@@ -22,14 +22,10 @@ public interface ManageDataArgument extends CandorArgument {
 
         String playerName = args[0];
 
-        if (!PLAYER_NAME_PATTERN.matcher(playerName).matches()) {
-            sender.sendMessage(ChatColor.RED + "Please type a valid player name");
-            return;
-        }
-
         plugin.getPlayerManager().getOffline(playerName,
                 (player, data) -> manage(plugin, sender, player, data, Arrays.copyOfRange(args, 1, args.length)),
-                player -> sender.sendMessage(ChatColor.RED + "This player never joined the server")
+                player -> sender.sendMessage(ChatColor.RED + "This player never joined the server"),
+                () -> sender.sendMessage(ChatColor.RED + "Please type a valid player name")
         );
     }
 
