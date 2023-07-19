@@ -2,6 +2,7 @@ package fr.candor.shop.player;
 
 import com.github.benmanes.caffeine.cache.AsyncLoadingCache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import fr.candor.shop.module.Module;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -20,9 +21,9 @@ public class PlayerManager extends Module {
     private static final ExecutorService OFFLINE_POOL = Executors.newCachedThreadPool();
     private static final Pattern PLAYER_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_]{3,16}$");
 
-    private final AsyncLoadingCache<UUID, PlayerData> playerCache = Caffeine.newBuilder()
+    private final LoadingCache<UUID, PlayerData> playerCache = Caffeine.newBuilder()
             .expireAfter(new PlayerExpiration())
-            .buildAsync(this::queueLoad); // TODO: Run database load
+            .build(this::queueLoad); // TODO: Run database load
 
     public PlayerManager() {
         this.plugin.getServer().getOnlinePlayers().forEach(player -> this.playerCache.get(player.getUniqueId()));
@@ -35,7 +36,7 @@ public class PlayerManager extends Module {
         return data;
     }
 
-    public AsyncLoadingCache<UUID, PlayerData> getPlayerCache() {
+    public LoadingCache<UUID, PlayerData> getPlayerCache() {
         return playerCache;
     }
 
@@ -63,10 +64,14 @@ public class PlayerManager extends Module {
         OFFLINE_POOL.execute(() -> {
             OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
             if (player.hasPlayedBefore() || player.isOnline()) {
-                PlayerData data = this.playerCache.get(player.getUniqueId()).join();
+                PlayerData data = this.playerCache.get(player.getUniqueId());
                 if (data == null) {
                     if (notFound != null) notFound.accept(player);
                     return;
+                }
+
+                if (!data.isLoaded()) {
+                    this.plugin.getDatabase().loadUser(data);
                 }
 
                 found.accept(player, data);

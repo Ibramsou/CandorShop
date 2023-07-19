@@ -3,6 +3,7 @@ package fr.candor.shop.player;
 import fr.candor.shop.module.ModuleListener;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -17,9 +18,13 @@ public class PlayerListener extends ModuleListener<PlayerManager> {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        this.module.getPlayerCache().get(player.getUniqueId()).thenAccept(data -> {
-            data.setPlayer(player);
-        });
+        PlayerData data = this.module.getPlayerCache().get(player.getUniqueId());
+        if (data == null) {
+            player.kickPlayer(ChatColor.RED + "Could not load your data, please reconnect");
+            return;
+        }
+
+        data.setPlayer(player);
     }
 
     @EventHandler

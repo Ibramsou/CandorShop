@@ -18,6 +18,7 @@ public class PlayerData {
     private double balance;
     private Player player;
     private boolean saving;
+    private boolean loaded;
     private final Lock lock = new ReentrantLock();
 
     public PlayerData(ShopPlugin plugin, UUID uniqueId) {
@@ -32,6 +33,14 @@ public class PlayerData {
 
     public void setSaving(boolean saving) {
         this.saving = saving;
+    }
+
+    public boolean isLoaded() {
+        return loaded;
+    }
+
+    public void setLoaded(boolean loaded) {
+        this.loaded = loaded;
     }
 
     public UUID getUniqueId() {

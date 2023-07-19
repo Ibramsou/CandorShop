@@ -1,6 +1,7 @@
 package fr.candor.shop.command.balance;
 
 import fr.candor.shop.ShopPlugin;
+import fr.candor.shop.player.PlayerData;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -18,7 +19,6 @@ public class BalanceCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        System.out.println(args.length);
         if (args.length > 0) {
             String playerName = args[0];
             this.plugin.getPlayerManager().getOffline(playerName,
@@ -30,9 +30,12 @@ public class BalanceCommand implements CommandExecutor {
         }
 
         if (sender instanceof Player player) {
-            this.plugin.getPlayerManager().getPlayerCache().get(player.getUniqueId()).thenAccept(data -> {
-                sender.sendMessage(ChatColor.GRAY + "Balance: " + data.getBalance());
-            });
+            PlayerData data = this.plugin.getPlayerManager().getPlayerCache().get(player.getUniqueId());
+            if (data == null) {
+                sender.sendMessage(ChatColor.RED + "Data not loaded, please reconnect");
+                return false;
+            }
+            sender.sendMessage(ChatColor.GRAY + "Balance: " + data.getBalance());
             return true;
         }
 
