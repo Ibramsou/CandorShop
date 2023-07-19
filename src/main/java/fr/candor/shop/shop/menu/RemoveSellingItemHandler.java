@@ -31,7 +31,7 @@ public class RemoveSellingItemHandler implements SimpleMenuHandler {
     public Map<Integer, MenuItem> itemMap() {
         Map<Integer, MenuItem> map = new HashMap<>();
         FunctionalItem confirm = new FunctionalItem(new ItemBuilder(Material.GREEN_WOOL).displayName(ChatColor.GREEN + "Confirm").buildItem())
-                .setConsumer((menu, holder, event, player, type) -> this.plugin.getShopManager().removeItem(player, this.item));
+                .setConsumer((menu, holder, event, player, type) -> this.plugin.getShopManager().removeItem(player, this.item, true));
         FunctionalItem cancel = new FunctionalItem(new ItemBuilder(Material.RED_WOOL).displayName(ChatColor.RED + "Cancel").buildItem())
                 .setConsumer((menu, holder, event, player, type) -> player.closeInventory());
         map.put(12, confirm);

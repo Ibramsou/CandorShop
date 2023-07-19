@@ -30,6 +30,8 @@ public class ShopManager extends Module implements PaginatedMenuHandler {
         this.sellerItems.computeIfAbsent(player.getUniqueId(), uuid -> new HashSet<>()).add(item);
         this.menuItems.add(item);
         this.plugin.getServer().getScheduler().runTaskLaterAsynchronously(this.plugin, () -> this.plugin.getDatabase().sellItem(item), 1L);
+        player.sendMessage(ChatColor.GREEN + "Added your item to shop for " + price + "$");
+        player.getInventory().setItemInMainHand(null);
     }
 
     public void buyItem(Player buyer, ShopItem item) {
@@ -42,16 +44,21 @@ public class ShopManager extends Module implements PaginatedMenuHandler {
         if (data.getBalance() > item.price()) {
             this.plugin.getPlayerManager().modifyBalance(item.seller(), currentValue -> currentValue + item.price());
             data.modifyBalance(currentValue -> currentValue - item.price());
-            this.removeItem(buyer, item);
+            this.removeItem(buyer, item, false);
         } else {
             buyer.sendMessage(ChatColor.RED + "You don't have enough money");
         }
     }
 
-    public void removeItem(Player player, ShopItem item) {
+    public void removeItem(Player player, ShopItem item, boolean remove) {
         if (player != null) {
             player.getInventory().addItem(item.item());
             player.closeInventory();
+            if (remove) {
+                player.sendMessage(ChatColor.RED + "You removed a selling item");
+            } else {
+                player.sendMessage(ChatColor.RED + String.format("You bought an item for %s$", item.price()));
+            }
         }
         this.sellerItems.get(item.seller()).remove(item);
         this.menuItems.remove(item);
