@@ -60,6 +60,11 @@ bukkit {
     version = buildVersion
     main = 'fr.candor.shop.ShopPlugin'
     author = 'Bramsou'
+    commands {
+        manage {
+            description = 'Manage players balance'
+        }
+    }
 }
 
 artifacts {

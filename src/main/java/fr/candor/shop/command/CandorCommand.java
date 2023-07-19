@@ -23,7 +23,7 @@ public abstract class CandorCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@Nonnull CommandSender sender, @Nonnull Command command, @Nonnull String label, @Nonnull String[] args) {
-        if (!sender.hasPermission(Objects.requireNonNull(command.getPermission()))) {
+        if (command.getPermission() != null && !sender.hasPermission(command.getPermission())) {
             sender.sendMessage("§cYou don't have permission.");
             return false;
         }

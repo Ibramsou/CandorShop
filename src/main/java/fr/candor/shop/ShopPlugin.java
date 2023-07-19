@@ -1,7 +1,10 @@
 package fr.candor.shop;
 
+import fr.candor.shop.command.manage.ManageCommand;
 import fr.candor.shop.player.PlayerManager;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.Objects;
 
 public class ShopPlugin extends JavaPlugin {
 
@@ -20,6 +23,12 @@ public class ShopPlugin extends JavaPlugin {
 
         this.config = new ShopConfig(this);
         this.playerManager = new PlayerManager();
+
+        this.addCommands();
+    }
+
+    private void addCommands() {
+        Objects.requireNonNull(this.getServer().getPluginCommand("manage")).setExecutor(new ManageCommand(this));
     }
 
     public PlayerManager getPlayerManager() {
