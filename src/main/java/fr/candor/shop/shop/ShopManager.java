@@ -1,12 +1,16 @@
 package fr.candor.shop.shop;
 
-import fr.candor.shop.ShopPlugin;
+import fr.candor.shop.item.ItemBuilder;
 import fr.candor.shop.menu.MenuItem;
 import fr.candor.shop.menu.handler.PaginatedMenuHandler;
+import fr.candor.shop.menu.item.FunctionalItem;
+import fr.candor.shop.menu.type.SimpleMenu;
 import fr.candor.shop.module.Module;
 import fr.candor.shop.player.PlayerData;
+import fr.candor.shop.shop.menu.SellingItemsHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -36,15 +40,22 @@ public class ShopManager extends Module implements PaginatedMenuHandler {
         PlayerData data = this.plugin.getPlayerManager().getPlayerCache().get(buyer.getUniqueId());
         if (data == null) return;
         if (data.getBalance() > item.price()) {
-            this.sellerItems.get(item.seller()).remove(item);
-            this.menuItems.remove(item);
             this.plugin.getPlayerManager().modifyBalance(item.seller(), currentValue -> currentValue + item.price());
             data.modifyBalance(currentValue -> currentValue - item.price());
-            buyer.getInventory().addItem(item.item());
-            Bukkit.getScheduler().runTaskLaterAsynchronously(this.plugin, () -> this.plugin.getDatabase().dropItem(item), 1L);
+            this.removeItem(buyer, item);
         } else {
             buyer.sendMessage(ChatColor.RED + "You don't have enough money");
         }
+    }
+
+    public void removeItem(Player player, ShopItem item) {
+        if (player != null) {
+            player.getInventory().addItem(item.item());
+            player.closeInventory();
+        }
+        this.sellerItems.get(item.seller()).remove(item);
+        this.menuItems.remove(item);
+        Bukkit.getScheduler().runTaskLaterAsynchronously(this.plugin, () -> this.plugin.getDatabase().dropItem(item), 1L);
     }
 
     public Collection<ShopItem> getSellingItems(UUID uuid) {
@@ -55,11 +66,20 @@ public class ShopManager extends Module implements PaginatedMenuHandler {
 
     @Override
     public String title() {
-        return ChatColor.GREEN + "Auction House";
+        return ChatColor.RED + "Auction House";
     }
 
     @Override
     public Collection<? extends MenuItem> allItems() {
         return this.menuItems;
+    }
+
+    @Override
+    public Map<Integer, MenuItem> itemsPerPage() {
+        Map<Integer, MenuItem> map = PaginatedMenuHandler.super.itemsPerPage();
+        FunctionalItem sellingItems = new FunctionalItem(new ItemBuilder(Material.COMPASS).displayName(ChatColor.AQUA + "Your Selling Items").buildItem())
+                .setConsumer((menu, holder, event, player, type) -> new SimpleMenu(new SellingItemsHandler(this.plugin, player)).open(player));
+        map.put(4, sellingItems);
+        return map;
     }
 }
