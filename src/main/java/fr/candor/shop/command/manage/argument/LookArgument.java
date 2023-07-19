@@ -20,7 +20,7 @@ public class LookArgument implements ManageDataArgument {
 
     @Override
     public void manage(ShopPlugin plugin, CommandSender sender, OfflinePlayer player, PlayerData data, String[] args) {
-
+        sender.sendMessage(ChatColor.GRAY + String.format("%s's balance: %s", player.getName(), data.getBalance()));
     }
 
 

@@ -31,6 +31,7 @@ public class PlayerData {
         this.balance = difference.apply(this.balance);
     }
 
+    // TODO: Add parsed balance amount method
     public double getBalance() {
         return balance;
     }

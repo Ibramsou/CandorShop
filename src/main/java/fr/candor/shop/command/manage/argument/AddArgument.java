@@ -20,6 +20,10 @@ public class AddArgument implements ManageValueArgument {
 
     @Override
     public void manage(ShopPlugin plugin, CommandSender sender, OfflinePlayer player, PlayerData data, double amount) {
-
+        data.modifyBalance(currentValue -> currentValue + amount);
+        sender.sendMessage(ChatColor.GREEN + String.format("Added %s to %s's balance", amount, player.getName()));
+        if (player.getPlayer() != null && player.isOnline()) {
+            player.getPlayer().sendMessage(ChatColor.GREEN + String.format("You won %s on your balance", amount));
+        }
     }
 }
