@@ -74,6 +74,7 @@ bukkit {
             description = 'Sell an item'
         }
     }
+    apiVersion = '1.19'
 }
 
 artifacts {
