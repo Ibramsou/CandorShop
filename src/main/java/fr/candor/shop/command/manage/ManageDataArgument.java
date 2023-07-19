@@ -35,11 +35,11 @@ public interface ManageDataArgument extends CandorArgument {
         OFFLINE_POOL.execute(() -> {
             OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
             PlayerData data = plugin.getPlayerManager().getPlayerCache().get(player.getUniqueId());
-            manage(plugin, player, data, Arrays.copyOfRange(args, args.length + 1, args.length));
+            manage(plugin, sender, player, data, Arrays.copyOfRange(args, args.length + 1, args.length));
         });
     }
 
-    void manage(ShopPlugin plugin, OfflinePlayer player, PlayerData data, String[] args);
+    void manage(ShopPlugin plugin, CommandSender sender, OfflinePlayer player, PlayerData data, String[] args);
 
     String usage();
 }
