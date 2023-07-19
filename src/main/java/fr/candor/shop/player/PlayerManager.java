@@ -4,7 +4,6 @@ import com.github.benmanes.caffeine.cache.AsyncLoadingCache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import fr.candor.shop.module.Module;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 
 import javax.annotation.Nonnull;
@@ -23,15 +22,27 @@ public class PlayerManager extends Module {
 
     private final AsyncLoadingCache<UUID, PlayerData> playerCache = Caffeine.newBuilder()
             .expireAfter(new PlayerExpiration())
-            .buildAsync(PlayerData::new); // TODO: Run database load
+            .buildAsync(this::queueLoad); // TODO: Run database load
 
     public PlayerManager() {
         this.plugin.getServer().getOnlinePlayers().forEach(player -> this.playerCache.get(player.getUniqueId()));
         this.listener(new PlayerListener(this));
     }
 
+    private PlayerData queueLoad(UUID uuid) {
+        PlayerData data = new PlayerData(this.plugin, uuid);
+        this.plugin.getDatabase().getLoadQueue().add(data);
+        return data;
+    }
+
     public AsyncLoadingCache<UUID, PlayerData> getPlayerCache() {
         return playerCache;
+    }
+
+    public void saveData(PlayerData data) {
+        if (data.isSaving()) return;
+        data.setSaving(true);
+        this.plugin.getDatabase().getSaveQueue().add(data);
     }
 
     public void getOffline(@Nonnull String playerName, @Nonnull BiConsumer<OfflinePlayer, PlayerData> consumer) {

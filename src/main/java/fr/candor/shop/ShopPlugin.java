@@ -16,6 +16,7 @@ public class ShopPlugin extends JavaPlugin {
     }
 
     private ShopConfig config;
+    private ShopDatabase database;
     private PlayerManager playerManager;
 
     @Override
@@ -23,6 +24,7 @@ public class ShopPlugin extends JavaPlugin {
         instance = this;
 
         this.config = new ShopConfig(this);
+        this.database = new ShopDatabase(this);
         this.playerManager = new PlayerManager();
 
         this.addCommands();
@@ -31,6 +33,10 @@ public class ShopPlugin extends JavaPlugin {
     private void addCommands() {
         Objects.requireNonNull(this.getServer().getPluginCommand("manage")).setExecutor(new ManageCommand(this));
         Objects.requireNonNull(this.getServer().getPluginCommand("balance")).setExecutor(new BalanceCommand(this));
+    }
+
+    public ShopDatabase getDatabase() {
+        return database;
     }
 
     public PlayerManager getPlayerManager() {
