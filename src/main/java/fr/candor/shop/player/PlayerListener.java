@@ -17,13 +17,9 @@ public class PlayerListener extends ModuleListener<PlayerManager> {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        PlayerData data = this.module.getPlayerCache().get(player.getUniqueId());
-        if (data == null) {
-            player.kickPlayer(Component.text("An error occurred while loading your data").color(NamedTextColor.RED).content());
-            return;
-        }
-
-        data.setPlayer(player);
+        this.module.getPlayerCache().get(player.getUniqueId()).thenAccept(data -> {
+            data.setPlayer(player);
+        });
     }
 
     @EventHandler
