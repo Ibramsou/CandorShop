@@ -30,7 +30,7 @@ public class ShopConfig {
         return sql;
     }
 
-    static class SqlSection extends ConfigurationPart {
+    public static class SqlSection extends ConfigurationPart {
         @ConfigurationPath("host")
         private final String host = "localhost";
         @ConfigurationPath("port")
