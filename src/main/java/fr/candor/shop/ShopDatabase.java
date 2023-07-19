@@ -31,15 +31,15 @@ public class ShopDatabase extends SqlDatabase {
         ));
     }
 
-    public void loadUser(PlayerData data) {
+    public PlayerData loadUser(UUID uuid) {
+        PlayerData data = new PlayerData(this.plugin, uuid);
         this.prepareClosingStatement("SELECT balance FROM players WHERE uuid=?", statement -> {
             statement.setString(1, data.getUniqueId().toString());
             ResultSet result = statement.executeQuery();
             if (result == null || !result.next()) return;
             data.setBalance(result.getDouble("balance"));
         });
-
-        data.setLoaded(true);
+        return data;
     }
 
     public BlockingQueue<PlayerData> getSaveQueue() {
@@ -67,7 +67,6 @@ public class ShopDatabase extends SqlDatabase {
                     if (result != null && result.next()) {
                         double amount = result.getDouble("balance");
                         data.modifyBalance(currentValue -> currentValue + amount, false);
-                        data.setLoaded(true);
                     }
                 } finally {
                     data.getLock().unlock();

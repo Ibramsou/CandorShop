@@ -21,7 +21,7 @@ public class BalanceCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length > 0) {
             String playerName = args[0];
-            this.plugin.getPlayerManager().getOffline(playerName,
+            this.plugin.getPlayerManager().getByName(playerName,
                     (player, data) -> sender.sendMessage(ChatColor.GRAY + String.format("%s's balance: %s", player.getName(), data.getBalance())),
                     player -> sender.sendMessage(ChatColor.RED + "This player never joined the server"),
                     () -> sender.sendMessage(ChatColor.RED + "Data not found")

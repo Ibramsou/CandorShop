@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 public class PlayerManager extends Module {
@@ -45,16 +46,28 @@ public class PlayerManager extends Module {
         this.plugin.getDatabase().getSaveQueue().add(data);
     }
 
-    public void getOffline(@Nonnull String playerName, @Nonnull BiConsumer<OfflinePlayer, PlayerData> consumer) {
-        this.getOffline(playerName, consumer, null, null);
+    private PlayerData directLoad(UUID uuid) {
+        return this.plugin.getDatabase().loadUser(uuid);
     }
 
-    public void getOffline(@Nonnull String playerName, @Nonnull BiConsumer<OfflinePlayer, PlayerData> found, @Nullable Consumer<OfflinePlayer> notFound) {
-        this.getOffline(playerName, found, notFound, null);
+    public void modifyBalance(UUID uniqueId, Function<Double, Double> difference) {
+        OFFLINE_POOL.execute(() -> {
+            PlayerData data = this.playerCache.get(uniqueId, this::directLoad);
+            if (data == null) return;
+            data.modifyBalance(difference);
+        });
+    }
+
+    public void getByName(@Nonnull String playerName, @Nonnull BiConsumer<OfflinePlayer, PlayerData> consumer) {
+        this.getByName(playerName, consumer, null, null);
+    }
+
+    public void getByName(@Nonnull String playerName, @Nonnull BiConsumer<OfflinePlayer, PlayerData> found, @Nullable Consumer<OfflinePlayer> notFound) {
+        this.getByName(playerName, found, notFound, null);
     }
 
     @SuppressWarnings("deprecation")
-    public void getOffline(@Nonnull String playerName, @Nonnull BiConsumer<OfflinePlayer, PlayerData> found, @Nullable Consumer<OfflinePlayer> notFound, @Nullable Runnable invalidName) {
+    public void getByName(@Nonnull String playerName, @Nonnull BiConsumer<OfflinePlayer, PlayerData> found, @Nullable Consumer<OfflinePlayer> notFound, @Nullable Runnable invalidName) {
         if (invalidName != null && !PLAYER_NAME_PATTERN.matcher(playerName).matches()) {
             invalidName.run();
             return;
@@ -63,14 +76,10 @@ public class PlayerManager extends Module {
         OFFLINE_POOL.execute(() -> {
             OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
             if (player.hasPlayedBefore() || player.isOnline()) {
-                PlayerData data = this.playerCache.get(player.getUniqueId());
+                PlayerData data = this.playerCache.get(player.getUniqueId(), this::directLoad);
                 if (data == null) {
                     if (notFound != null) notFound.accept(player);
                     return;
-                }
-
-                if (!data.isLoaded()) {
-                    this.plugin.getDatabase().loadUser(data);
                 }
 
                 found.accept(player, data);
