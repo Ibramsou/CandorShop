@@ -17,14 +17,7 @@ public class PlayerListener extends ModuleListener<PlayerManager> {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        PlayerData data = this.module.getPlayerCache().get(player.getUniqueId());
-        if (data == null) {
-            player.kickPlayer(ChatColor.RED + "Could not load your data, please reconnect");
-            return;
-        }
-
-        data.setPlayer(player);
+        this.module.loadData(event.getPlayer());
     }
 
     @EventHandler

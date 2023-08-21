@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import fr.candor.shop.module.Module;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -26,8 +27,17 @@ public class PlayerManager extends Module {
             .build(this::queueLoad);
 
     public PlayerManager() {
-        this.plugin.getServer().getOnlinePlayers().forEach(player -> this.playerCache.get(player.getUniqueId()));
+        this.plugin.getServer().getOnlinePlayers().forEach(this::loadData);
         this.listener(new PlayerListener(this));
+    }
+
+    public void loadData(Player player) {
+        PlayerData data = this.playerCache.get(player.getUniqueId());
+        if (data == null) {
+            player.sendMessage("§cCould not load your data, please reconnect.");
+            return;
+        }
+        data.setPlayer(player);
     }
 
     private PlayerData queueLoad(UUID uuid) {

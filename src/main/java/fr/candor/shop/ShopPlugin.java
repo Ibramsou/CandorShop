@@ -37,6 +37,11 @@ public class ShopPlugin extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new MenuListener(), this); // Pearl Menu API (from mine)
     }
 
+    @Override
+    public void onDisable() {
+        this.database.disable();
+    }
+
     private void addCommands() {
         Objects.requireNonNull(this.getServer().getPluginCommand("manage")).setExecutor(new ManageCommand(this));
         Objects.requireNonNull(this.getServer().getPluginCommand("balance")).setExecutor(new BalanceCommand(this));

@@ -23,7 +23,6 @@ public class PlayerData {
     public PlayerData(ShopPlugin plugin, UUID uniqueId) {
         this.plugin = plugin;
         this.uniqueId = uniqueId;
-        this.player = Bukkit.getPlayer(uniqueId);
     }
 
     public boolean isSaving() {

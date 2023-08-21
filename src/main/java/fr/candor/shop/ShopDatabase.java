@@ -4,17 +4,19 @@ import fr.candor.shop.database.SqlDatabase;
 import fr.candor.shop.player.PlayerData;
 import fr.candor.shop.shop.ShopItem;
 import fr.candor.shop.storage.ItemByteSerializer;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class ShopDatabase extends SqlDatabase {
 
+    private final ScheduledExecutorService loadPool = Executors.newSingleThreadScheduledExecutor(), savePool = Executors.newSingleThreadScheduledExecutor();
     private final BlockingQueue<PlayerData> loadQueue = new LinkedBlockingQueue<>();
     private final BlockingQueue<PlayerData> saveQueue = new LinkedBlockingQueue<>();
     private final ShopPlugin plugin;
@@ -24,8 +26,15 @@ public class ShopDatabase extends SqlDatabase {
         this.plugin = plugin;
 
         this.loadTables();
-        Executors.newSingleThreadScheduledExecutor().schedule(this::runBlockingLoadQueue, 1L, TimeUnit.SECONDS);
-        Executors.newSingleThreadScheduledExecutor().schedule(this::runBlockingSaveQueue, 1L, TimeUnit.SECONDS);
+        this.loadPool.scheduleAtFixedRate(this::loadUsers, 50 * 5, 50 * 5, TimeUnit.MILLISECONDS);
+        this.savePool.scheduleAtFixedRate(this::saveUsers, 1L, 1L, TimeUnit.MINUTES);
+    }
+
+    public void disable() {
+        this.loadPool.shutdownNow();
+        this.savePool.shutdownNow();
+        this.loadUsers();
+        this.saveUsers();
     }
 
     private void loadTables() {
@@ -74,6 +83,8 @@ public class ShopDatabase extends SqlDatabase {
 
     public PlayerData loadUser(UUID uuid) {
         PlayerData data = new PlayerData(this.plugin, uuid);
+        Player player = Bukkit.getPlayer(uuid);
+        if (player != null) data.setPlayer(player);
         this.prepareClosingStatement("SELECT balance FROM players WHERE uuid=?", statement -> {
             statement.setString(1, data.getUniqueId().toString());
             ResultSet result = statement.executeQuery();
@@ -91,52 +102,60 @@ public class ShopDatabase extends SqlDatabase {
         return loadQueue;
     }
 
-    public void runBlockingLoadQueue() {
-        this.prepareClosingStatement("SELECT balance FROM players WHERE uuid=?", statement -> {
-            while (this.plugin.isEnabled()) {
-                PlayerData data;
-                try {
-                    data = this.loadQueue.take();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+    public void loadUsers() {
+        PlayerData firstElement = this.loadQueue.poll();
+        if (firstElement == null) {
+            return;
+        }
 
-                data.getLock().lock(); // synchronize to avoid save and load being in the same time
-                try {
-                    statement.setString(1, data.getUniqueId().toString());
-                    ResultSet result = statement.executeQuery();
-                    if (result != null && result.next()) {
-                        double amount = result.getDouble("balance");
-                        data.modifyBalance(currentValue -> currentValue + amount, false);
-                    }
-                } finally {
-                    data.getLock().unlock();
-                }
+        this.prepareClosingStatement("SELECT balance FROM players WHERE uuid=?", statement -> {
+            this.loadUser(firstElement, statement);
+            PlayerData data;
+            while ((data = this.loadQueue.poll()) != null) {
+                this.loadUser(data, statement);
             }
         });
     }
 
-    public void runBlockingSaveQueue() {
-        this.prepareClosingStatement("INSERT INTO players (uuid, balance) VALUES (?, ?) ON DUPLICATE KEY UPDATE balance = ?", statement -> {
-            while (this.plugin.isEnabled()) {
-                PlayerData data;
-                try {
-                    data = this.saveQueue.take();
-                    data.setSaving(false);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+    private void loadUser(PlayerData data, PreparedStatement statement) throws SQLException {
+        data.getLock().lock(); // synchronize to avoid save and load being in the same time
+        try {
+            statement.setString(1, data.getUniqueId().toString());
+            ResultSet result = statement.executeQuery();
+            if (result != null && result.next()) {
+                double amount = result.getDouble("balance");
+                data.modifyBalance(currentValue -> currentValue + amount, false);
+            }
+        } finally {
+            data.getLock().unlock();
+        }
 
-                data.getLock().lock();
-                try {
-                    statement.setString(1, data.getUniqueId().toString());
-                    statement.setDouble(2, data.getBalance());
-                    statement.setDouble(3, data.getBalance());
-                    statement.executeUpdate();
-                } finally {
-                    data.getLock().unlock();
-                }
+    }
+
+    public void saveUsers() {
+        PlayerData firstElement = this.saveQueue.poll();
+        if (firstElement == null) {
+            return;
+        }
+        this.prepareClosingStatement("INSERT INTO players (uuid, balance) VALUES (?, ?) ON DUPLICATE KEY UPDATE balance = ?", statement -> {
+            this.saveUser(firstElement, statement);
+            PlayerData data;
+            while ((data = this.saveQueue.poll()) != null) {
+                this.saveUser(data, statement);
             }
         });
+    }
+
+    private void saveUser(PlayerData data, PreparedStatement statement) throws SQLException {
+        data.setSaving(false);
+        data.getLock().lock();
+        try {
+            statement.setString(1, data.getUniqueId().toString());
+            statement.setDouble(2, data.getBalance());
+            statement.setDouble(3, data.getBalance());
+            statement.executeUpdate();
+        } finally {
+            data.getLock().unlock();
+        }
     }
 }
